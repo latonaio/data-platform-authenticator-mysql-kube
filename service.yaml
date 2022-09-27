@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: data-platform-authenticator-mysql-kube # リポジトリによって変更
+spec:
+  ports:
+    - port: 3306
+      nodePort: 30010
+  selector:
+    app: mysql
+  type: NodePort
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: data-platform-authenticator-mysql-kube # リポジトリによって変更
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      # nodeName: mysql-data
+      hostname: mysql-data
+      containers:
+        - image: mariadb:10.6
+          name: mysql
+          env:
+            # Use secret in real usage
+            - name: MYSQL_ROOT_PASSWORD
+              value: XXXXX
+            - name: MYSQL_USER
+              value: XXXXX
+            - name: MYSQL_PASSWORD
+              value: XXXXX
+            - name: TZ
+              value: Asia/Tokyo
+          ports:
+            - containerPort: 3306
+              name: mysql
+          volumeMounts:
+            - name: mysql-persistent-storage
+              mountPath: /var/lib/mysql
+            - name: initdb
+              mountPath: /docker-entrypoint-initdb.d
+            - name: current-dir
+              mountPath: /src
+      volumes:
+        - name: mysql-persistent-storage
+          persistentVolumeClaim:
+            claimName: mysql-pv-claim
+        - name: initdb
+          hostPath:
+            path: /mnt/mysql_init
+        - name: current-dir
+          hostPath:
+            path: /home/latona/data-platform-authenticator-mysql-kube # カレントディレクトリを指定

@@ -1,8 +1,0 @@
-- name: create mysql database for DataPlatfromAuthenticatorMySQLKube
-  shell: |
-    mysql -u{{ mysql.user }} -p{{ mysql.password }} -h 127.0.0.1 -P 30000 -e "CREATE DATABASE IF NOT EXISTS Authenticator default character set utf8 ;"
-
-- name: load data-platform-authenticator-mysql-kube/data-platform-authenticator-sql-business-user-data.sql
-  shell: |
-    cd {{ work_dir }}/Runtime/data-platform-authenticator-mysql-kube
-    mysql -u{{ mysql.user }} -p{{ mysql.password }} -h 127.0.0.1 -P 30000 -D Authenticator < dump.sql

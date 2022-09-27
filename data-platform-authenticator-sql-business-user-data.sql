@@ -19,7 +19,7 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 
-# テーブルのダンプ Users
+# テーブルのダンプ data_platform_authenticator_business_user_data
 # ------------------------------------------------------------
 
 DROP TABLE IF EXISTS `data_platform_authenticator_business_user_data`;
@@ -38,14 +38,14 @@ CREATE TABLE `data_platform_authenticator_business_user_data` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-LOCK TABLES `Users` WRITE;
-/*!40000 ALTER TABLE `Users` DISABLE KEYS */;
+LOCK TABLES `data_platform_authenticator_business_user_data` WRITE;
+/*!40000 ALTER TABLE `data_platform_authenticator_business_user_data` DISABLE KEYS */;
 
-INSERT INTO `Users` (`login_id`, `password`, `last_login_at`, `created_at`, `updated_at`, `deleted_at`)
+INSERT INTO `data_platform_authenticator_business_user_data` (`login_id`, `password`, `last_login_at`, `created_at`, `updated_at`, `deleted_at`)
 VALUES
 	('test_login_id','test_password','2021-01-26 19:03:51','2021-01-26 19:03:51','2021-01-26 19:03:51','0000-00-00 00:00:00');
 
-/*!40000 ALTER TABLE `Users` ENABLE KEYS */;
+/*!40000 ALTER TABLE `data_platform_authenticator_business_user_data` ENABLE KEYS */;
 UNLOCK TABLES;
 
 

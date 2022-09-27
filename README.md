@@ -4,7 +4,7 @@ data-platfrom-authenticator-mysql-kube は、Kubernetes 上で MariaDB(MySQL) �
 また、本リポジトリには、MySQLの初期設定と、Pod立ち上げ後のテーブルの作成に関する手順が含まれています。  
 AIONでは、MySQLは主に、エッジアプリケーションで発生した静的なデータを保持・維持するために用いられます。  
 
-# 動作環境
+## 動作環境
 
 * OS: Linux OS  
 
@@ -13,39 +13,27 @@ AIONでは、MySQLは主に、エッジアプリケーションで発生した�
 * Kubernetes  
 
 
-## data-platfrom-authenticator-mysql-kube を用いたエッジコンピューティングアーキテクチャ(OMOTE-Bakoアプリケーションの例)  
+## data-platfrom-authenticator-mysql-kube を用いたエッジコンピューティングアーキテクチャ  
 data-platfrom-authenticator-mysql-kube は、下記の黄色い枠の部分のリソースです。  
-![mysql_omotebako](docs/omotebako_architecture.drowio.png)  
+![mysql_dataplatform](docs/dataplatform_architecture.drawio.png)  
 
-# Kubernetes 上での MySQL の Pod 立ち上げ  
+## Kubernetes 上での MySQL の Pod 立ち上げ  
 以下の手順でKubernetes上にMySQLのPodを立ち上げます。  
 
-[1] 以下コマンドを実行してください  
-※ make install-default は、本レポジトリの Makefile 内にて定義されている独自の コマンドです。  
+[1] 以下コマンドを実行してください    
 
 ```
-$ make install-default PV_SIZE=1Gi USER_NAME=${MYSQL_USER} USER_PASSWORD=${MYSQL_PASSWORD}
-PV_SIZE 任意のストレージサイズ
-MYSQL_USER: 任意の「MySQLユーザ名」
-MYSQL_PASSWORD: 任意の「MySQLパスワード」
+$ kubectl apply -f service.yaml
 ```
 
 [2] 以下コマンドでMySQLのPodが正常に起動している事を確認してください  
 
 ```
-$ kubectl get po | grep mysql
+$ k get pod | grep mysql
 ```
 
-（※オプション）初期データを投入したい場合、[1] の事前に mysql_init内に初期データ挿入用のSQLファイルを配置してください  
-
-```
-$ mkdir mysql_init
-$ cp 初期データ挿入用のSQLファイルパス mysql_init/
-```
-
-
-# MySQL 立上げ・稼働 のための Kubernetes マニフェストファイル の設定
-上記 MySQL の Pod 立ち上げ により、以下の通りにマニフェストファイルが作成されます。
+## MySQL 立上げ・稼働 のための Kubernetes マニフェストファイル の設定
+上記 MySQL の Pod 立ち上げ のための マニフェストファイル は`service.yaml`です。
 
 * ポート: 3306   
 * コンテナイメージ: mariadb:10.6   
@@ -56,26 +44,35 @@ $ cp 初期データ挿入用のSQLファイルパス mysql_init/
 	* **initdb**:   
 		* コンテナ: /docker-entrypoint-initdb.d
 		* hostOS: /mnt/mysql_init
+	* **current-dir**:   
+		* コンテナ: /src
+		* hostOS: /home/latona/data-platform-authenticator-mysql-kube
 * タイムゾーン: Asia/Tokyo   
 
-# Kubernetes Pod 上での MySQLデータベース の 立ち上げ
-Kubernetes Pod 上で MySQLデータベースを立ち上げます。（下記の例では、データベースだけでなく、アプリケーションのコアテーブルを含む形でデータベースを立ち上げています）  
-```
-$ kubectl exec -i <mysql-pods> -- /bin/sh -c "mysql -u <username> -p<password> --default-character-set=utf8" < ./sql/ui-backend-for-omotebako.sql
-```
-`<mysql-pods>`、`<username>`および`<password>`はセットアップ環境に合わせて変えること  
+current-dirのhostOSはセットアップ環境に合わせて変えること
 
-# MySQLデータベース における アプリケーション の テーブル の作成    
-MySQLデータベースに、アプリケーションのテーブルを作成します。  
+## MySQLデータベース の作成 および アプリケーション の テーブル の作成    
+MySQLデータベースを作成します。また、アプリケーションのテーブルを作成します。 
 
 ```
-$ cd /path/to/calendar-module-kube-sql
-$ kubectl exec -i <mysql-pods> -- /bin/sh -c "mysql -u <username> -p<password> --default-character-set=utf8 -D Omotebako" < ./calendar-module-kube-sql.sql
+$ bash setup-mysql.sh
 ```
-`<mysql-pods>`、`<username>`および`<password>`はセットアップ環境に合わせて変えること
+MySQLデータベース作成の該当箇所は`setup-mysql.sh`の以下の部分です
+
+```
+kubectl exec -it ${MYSQL_POD} -- bash -c "mysql -u${DB_USER_NAME} -p${DB_USER_PASSWORD} -e \"CREATE DATABASE IF NOT EXISTS DataPlatformAuthenticatorMySQLKube default character set utf8 ;\""
+```
+
+アプリケーションのテーブル作成の該当箇所は`setup-mysql.sh`の以下の部分です
+
+```
+kubectl exec -it ${MYSQL_POD} -- bash -c "mysql -u${DB_USER_NAME} -p${DB_USER_PASSWORD} -D DataPlatformAuthenticatorMySQLKube < /src/data-platform-authenticator-sql-business-user-data.sql"
+```
+
+`${MYSQL_POD}`、`${DB_USER_NAME}`および`${DB_USER_PASSWORD}`はセットアップ環境に合わせて変えること
 
 
-# MariaDB について
+## MariaDB について
 エッジ環境はスペックの制限があるため、機能性とパフォーマンスのバランスに優れているMariaDB(MySQL)を採用しています。   
 RDBMSにはSQLite、SQL ServerやPostgreSQLなどがあります。 
 
@@ -86,7 +83,7 @@ MariaDB(MySQL)はSQL ServerやPostgreSQLの中間に位置し、高速で実用�
 
 以下、MariaDBの特徴です。   
 
-## MariaDB とは
+### MariaDB とは
 MariaDBはMySQLから派生したもので、MySQLと高い互換性があります。   
 
 《MySQLとMariaDBの違い》
@@ -102,7 +99,7 @@ MariaDBはMySQLから派生したもので、MySQLと高い互換性がありま
 |クラスター構成|対応|非対応|   
 
 
-## リレーショナル・データベース
+### リレーショナル・データベース
 MariaDB(MySQL)は、リレーショナルデータベースです。
 リレーショナルデータベースとは、データベース(DB)におけるデータを扱う方法の1つで、主に2つの特徴があります。   
 
@@ -111,7 +108,7 @@ MariaDB(MySQL)は、リレーショナルデータベースです。
 
 データを2次元の表に分割し、また複数の表を様々な手法で結合して使うことで、複雑なデータを柔軟に扱うことができます。   
 
-## 高い拡張性・柔軟性・速度
+### 高い拡張性・柔軟性・速度
 MariaDB(MySQL)の利点は以下の通りです。 
 
 * システム規模が大きくなっても対応できる拡張性   
@@ -119,7 +116,7 @@ MariaDB(MySQL)の利点は以下の通りです。
 * 大規模なデータにも耐えうるような高速動作   
 * データを保護するためのセキュリティ機能（データベースにアクセスするためのアクセス制限、盗み見防止のデータ暗号機能、Webサイトなどを安全に接続するためのセキュリティ技術など）   
 
-## トランザクションとロールバック
+### トランザクションとロールバック
 トランザクションとはDBシステムで実行される処理のまとまり、または作業単位のことです。   
 トランザクションを使うと複数のクエリをまとめて１つの処理として扱うことができます。   
 
