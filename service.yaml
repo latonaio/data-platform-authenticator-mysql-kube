@@ -60,3 +60,33 @@ spec:
         - name: current-dir
           hostPath:
             path: /home/latona/data-platform-authenticator-mysql-kube # カレントディレクトリを指定
+---
+# MYSQL
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: mysql-pv-volume
+  labels:
+    type: local
+  namespace: default
+spec:
+  storageClassName: mysql
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/mysql_data_data-platfrom-authenticator-mysql-kube" # /mnt/{リポジトリ名}を指定
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pv-claim
+  namespace: default
+spec:
+  storageClassName: mysql
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
