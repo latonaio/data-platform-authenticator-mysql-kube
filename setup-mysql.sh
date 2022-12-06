@@ -11,7 +11,7 @@ DB_ROOT_PASSWORD="XXXXXXXX" # DBのルートパスワードを指定
 DB_USER_NAME="XXXXXXXX" # DBのユーザー名を指定
 DB_USER_PASSWORD="XXXXXXXX" # DBのパスワードを指定
 POD_NAME="data-platform-authenticator-mysql-kube" # Podの名前を指定
-DATABASE_NAME="DataPlatformAuthenticatorSQL" # データベース名を指定
+DATABASE_NAME="DataPlatformAuthenticatorMysqlKube" # データベース名を指定
 SQL_FILES=( # sqlファイルの名前を（複数）指定（親テーブルのsqlファイルが最初）
   "data-platform-authenticator-sql-business-user-data.sql"
 )
