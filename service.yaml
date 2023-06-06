@@ -26,6 +26,7 @@ spec:
         app: mysql
     spec:
       # nodeName: mysql-data
+      nodeName: worker
       hostname: mysql-data
       containers:
         - image: mariadb:10.6
